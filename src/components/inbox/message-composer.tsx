@@ -794,6 +794,17 @@ export function MessageComposer({
             }
             disabled={sessionExpired || readOnly}
             rows={1}
+            // Tell iOS Safari this is chat text, not a form field: without
+            // these hints it shows the passwords/cards/address AutoFill bar
+            // above the keyboard on every focus.
+            name="chat-message"
+            autoComplete="off"
+            autoCorrect="on"
+            autoCapitalize="sentences"
+            spellCheck
+            enterKeyHint="send"
+            data-1p-ignore
+            data-lpignore="true"
             // Textarea keeps its own inline title — the GatedButton
             // wrapping pattern doesn't apply to non-button inputs.
             // The placeholder text also surfaces the read-only state.
@@ -956,6 +967,11 @@ function MediaDraftPreview({
               }
             }}
             placeholder={t("addCaption")}
+            name="chat-caption"
+            autoComplete="off"
+            autoCorrect="on"
+            enterKeyHint="send"
+            data-1p-ignore
             className="flex-1 rounded-xl border border-border bg-muted px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-primary/50"
           />
         )}
