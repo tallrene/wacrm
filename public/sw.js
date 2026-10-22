@@ -18,6 +18,8 @@ self.addEventListener("push", (event) => {
       // If this device already has the app open, visible and focused, the
       // in-page inbox is showing the message — don't double-notify.
       const wins = await self.clients.matchAll({ type: "window", includeUncontrolled: true });
+      // Tell open pages regardless (the inbox can refresh on it).
+      for (const w of wins) w.postMessage({ type: "push", ...data });
       const focused = wins.some((w) => w.visibilityState === "visible" && w.focused);
       if (focused) return;
       await self.registration.showNotification(title, {
