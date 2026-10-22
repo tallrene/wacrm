@@ -17,6 +17,7 @@ import {
   viewedConversationFromLocation,
   type NotificationLabels,
 } from "@/lib/notifications/browser-notify";
+import { currentSubscription } from "@/lib/push/client";
 
 const serverSnapshot = () => false;
 
@@ -73,6 +74,32 @@ export function useBrowserNotifications(): void {
   // pruned by shouldNotifyForMessage.
   const seenRef = useRef<Map<string, number>>(new Map());
 
+  // Does this device also have Web Push (service worker) enabled? If so
+  // the service worker already notifies whenever no focused window shows
+  // the app, so this in-page path must only cover the one case the
+  // worker deliberately skips: app visible AND focused. Without this the
+  // same message rings twice (push banner + in-page banner), which is
+  // exactly what happens on an iPhone Home-Screen app coming back from
+  // the background.
+  const pushActiveRef = useRef(false);
+  useEffect(() => {
+    if (!enabled) return;
+    let cancelled = false;
+    const refresh = () => {
+      void currentSubscription()
+        .then((sub) => {
+          if (!cancelled) pushActiveRef.current = !!sub;
+        })
+        .catch(() => undefined);
+    };
+    refresh();
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      cancelled = true;
+      document.removeEventListener("visibilitychange", refresh);
+    };
+  }, [enabled]);
+
   useEffect(() => {
     if (!enabled) return;
     if (getNotificationPermission() === "unsupported") return;
@@ -128,6 +155,12 @@ export function useBrowserNotifications(): void {
           // Re-check every time: the user can revoke permission in the
           // browser without the preference flipping.
           if (getNotificationPermission() !== "granted") return;
+          if (
+            pushActiveRef.current &&
+            !(document.visibilityState === "visible" && document.hasFocus())
+          ) {
+            return; // the service worker owns this case
+          }
           const msg = payload.new as Message;
           const shouldNotify = shouldNotifyForMessage(msg, {
             documentVisible: document.visibilityState === "visible",

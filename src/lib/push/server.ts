@@ -69,7 +69,9 @@ export async function sendInboundPush(input: InboundPushInput): Promise<{
     url: conversationHref(input.conversationId),
     conversationId: input.conversationId,
     messageId: input.message.id,
-    tag: `conv-${input.conversationId}`,
+    // Same tag as the in-page notifier (conversation id): if both ever
+    // fire, the OS replaces instead of stacking.
+    tag: input.conversationId,
   });
 
   let sent = 0;
