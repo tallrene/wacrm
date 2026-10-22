@@ -9,12 +9,14 @@ import { Header } from "@/components/layout/header";
 import { AccountAccessAlert } from "@/components/layout/account-access-alert";
 import { PresenceHeartbeat } from "@/components/presence/presence-heartbeat";
 import { BrowserNotificationsListener } from "@/components/notifications/browser-notifications-listener";
+import { useAppViewport } from "@/hooks/use-app-viewport";
 
 // Auth-gated dashboard shell. Extracted from the layout so the layout
 // itself can stay a server component and export metadata (noindex) —
 // client components can't export Next's metadata object.
 
 function DashboardShellInner({ children }: { children: React.ReactNode }) {
+  useAppViewport();
   const { user, loading } = useAuth();
   const router = useRouter();
   const t = useTranslations("DashboardShell");
@@ -44,7 +46,11 @@ function DashboardShellInner({ children }: { children: React.ReactNode }) {
   if (!user) return null;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <div
+      data-slot="app-shell"
+      className="flex h-screen overflow-hidden bg-background"
+      style={{ height: "var(--app-height, 100dvh)" }}
+    >
       {/* Reports this tab's online/away presence once we know a user is
           signed in. Headless — renders nothing. */}
       <PresenceHeartbeat />

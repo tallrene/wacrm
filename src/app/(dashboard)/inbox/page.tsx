@@ -561,8 +561,20 @@ function InboxPageInner() {
   // before, unchanged.
   const hasActiveConv = !!activeConversation;
 
+  // On phones the global "Inbox" bar is dead weight while a thread is open
+  // (WhatsApp shows only the contact header). globals.css hides it and
+  // zeroes --app-header-h below lg when this flag is set.
+  useEffect(() => {
+    const root = document.documentElement;
+    if (hasActiveConv) root.dataset.threadOpen = "true";
+    else delete root.dataset.threadOpen;
+    return () => {
+      delete root.dataset.threadOpen;
+    };
+  }, [hasActiveConv]);
+
   return (
-    <div className="-m-4 flex h-[calc(100vh-3.5rem)] flex-col overflow-hidden sm:-m-6">
+    <div className="-m-4 flex h-[calc(var(--app-height,100dvh)-var(--app-header-h,3.5rem))] flex-col overflow-hidden sm:-m-6">
       {/* WhatsApp connection banner — in the flex column, not absolute,
           so it pushes the panels down instead of overlapping them. */}
       {whatsappConnected === false && (

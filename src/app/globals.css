@@ -215,6 +215,24 @@ html[data-theme="h3d"] {
   --text-xs--line-height: calc(1.125 / 0.8125);
 }
 
+/* Phones: while a thread is open, drop the global app bar so the contact
+   header + composer get the room (the inbox page sets data-thread-open). */
+@media (max-width: 1023px) {
+  html[data-thread-open] [data-slot="app-header"] {
+    display: none;
+  }
+  html[data-thread-open] {
+    --app-header-h: 0px;
+  }
+}
+
+/* The shell is the only thing allowed to size the page; with --app-height
+   tracking visualViewport, the document itself must never scroll. */
+html,
+body {
+  overscroll-behavior-y: none;
+}
+
 /* Touch devices: iOS Safari zooms the page when a focused field is under
    16px, which wrecks the inbox layout. Keep form fields at >=16px there. */
 @media (hover: none) and (pointer: coarse) {
