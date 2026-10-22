@@ -37,7 +37,7 @@ export function BrandMark({
   return (
     <div
       className={cn(
-        "flex items-center justify-center rounded-lg bg-primary text-primary-foreground",
+        "flex items-center justify-center rounded-lg bg-[var(--brand,var(--primary))] text-primary-foreground",
         className,
       )}
     >

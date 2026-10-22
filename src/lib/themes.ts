@@ -71,8 +71,8 @@ export const THEMES: ReadonlyArray<ThemeMeta> = [
   {
     id: "h3d",
     name: "House of 3D",
-    tagline: "Brand default — storefront navy with electric blue.",
-    swatch: "oklch(0.5 0.3 264)",
+    tagline: "Brand default — storefront navy, tuned for reading.",
+    swatch: "oklch(0.62 0.2 266)",
   },
   {
     id: "violet",
