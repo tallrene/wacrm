@@ -2036,7 +2036,9 @@
       "deniedToast": "Las notificaciones están bloqueadas",
       "deniedHint": "Permite las notificaciones de esta app en los ajustes del dispositivo e inténtalo de nuevo.",
       "unconfigured": "El push aún no está configurado en el servidor.",
-      "failed": "No se pudieron activar las notificaciones push"
+      "failed": "No se pudieron activar las notificaciones push",
+      "soundLabel": "Sonido para mensajes nuevos",
+      "soundDesc": "Suena cuando escribe un cliente, mientras la app está abierta en este dispositivo."
     }
   },
   "SignupPage": {

@@ -2036,7 +2036,9 @@
       "deniedToast": "Notifications are blocked",
       "deniedHint": "Allow notifications for this app in your device settings, then try again.",
       "unconfigured": "Push isn’t configured on the server yet.",
-      "failed": "Couldn’t enable push notifications"
+      "failed": "Couldn’t enable push notifications",
+      "soundLabel": "Sound for new messages",
+      "soundDesc": "Chime when a customer writes, while the app is open on this device."
     }
   },
   "SignupPage": {

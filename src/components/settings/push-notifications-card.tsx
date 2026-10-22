@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { Loader2, Smartphone, CircleAlert } from "lucide-react";
+import { Loader2, Smartphone, CircleAlert, Volume2 } from "lucide-react";
 import { toast } from "sonner";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
@@ -13,6 +13,8 @@ import {
   pushSupport,
   type PushSupport,
 } from "@/lib/push/client";
+import { useNotifySoundPref } from "@/hooks/use-new-message-sound";
+import { playNewMessageChime, writeNotifySoundPref } from "@/lib/notifications/sound";
 
 /**
  * Per-device Web Push opt-in. Unlike the desktop card above it, this
@@ -25,6 +27,7 @@ export function PushNotificationsCard({ className }: { className?: string }) {
   const [enabled, setEnabled] = useState(false);
   const [busy, setBusy] = useState(false);
   const [ready, setReady] = useState(false);
+  const soundOn = useNotifySoundPref();
 
   useEffect(() => {
     const s = pushSupport();
@@ -72,6 +75,23 @@ export function PushNotificationsCard({ className }: { className?: string }) {
         <CardDescription>{t("description")}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">
+        <div className="flex items-center justify-between gap-4 rounded-md border border-border p-3">
+          <div className="min-w-0">
+            <p className="flex items-center gap-2 text-sm font-medium text-foreground">
+              <Volume2 className="size-4 text-muted-foreground" />
+              {t("soundLabel")}
+            </p>
+            <p className="text-xs text-muted-foreground">{t("soundDesc")}</p>
+          </div>
+          <Switch
+            checked={soundOn}
+            onCheckedChange={(next) => {
+              writeNotifySoundPref(next);
+              if (next) playNewMessageChime();
+            }}
+            aria-label={t("soundLabel")}
+          />
+        </div>
         {support === "needs-install" ? (
           <p className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">
             <CircleAlert className="mt-0.5 size-4 shrink-0" />
