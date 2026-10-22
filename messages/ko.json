@@ -2038,7 +2038,15 @@
       "unconfigured": "서버에 푸시가 아직 설정되지 않았습니다.",
       "failed": "푸시 알림을 켤 수 없습니다",
       "soundLabel": "새 메시지 소리",
-      "soundDesc": "이 기기에서 앱이 열려 있는 동안 고객이 메시지를 보내면 알림음을 냅니다."
+      "soundDesc": "이 기기에서 앱이 열려 있는 동안 고객이 메시지를 보내면 알림음을 냅니다.",
+      "toneLabel": "알림음",
+      "tones": {
+        "chime": "차임",
+        "pop": "팝",
+        "bell": "벨",
+        "triple": "트리플",
+        "knock": "노크"
+      }
     }
   },
   "SignupPage": {

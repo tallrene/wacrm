@@ -13,8 +13,14 @@ import {
   pushSupport,
   type PushSupport,
 } from "@/lib/push/client";
-import { useNotifySoundPref } from "@/hooks/use-new-message-sound";
-import { playNewMessageChime, writeNotifySoundPref } from "@/lib/notifications/sound";
+import { useNotifySoundPref, useNotifySoundPreset } from "@/hooks/use-new-message-sound";
+import {
+  SOUND_PRESETS,
+  playNewMessageChime,
+  writeNotifySoundPref,
+  writeNotifySoundPreset,
+} from "@/lib/notifications/sound";
+import { cn } from "@/lib/utils";
 
 /**
  * Per-device Web Push opt-in. Unlike the desktop card above it, this
@@ -28,6 +34,7 @@ export function PushNotificationsCard({ className }: { className?: string }) {
   const [busy, setBusy] = useState(false);
   const [ready, setReady] = useState(false);
   const soundOn = useNotifySoundPref();
+  const preset = useNotifySoundPreset();
 
   useEffect(() => {
     const s = pushSupport();
@@ -92,6 +99,30 @@ export function PushNotificationsCard({ className }: { className?: string }) {
             aria-label={t("soundLabel")}
           />
         </div>
+        {soundOn && (
+          <div className="flex flex-wrap gap-2" role="radiogroup" aria-label={t("toneLabel")}>
+            {SOUND_PRESETS.map((p) => (
+              <button
+                key={p}
+                type="button"
+                role="radio"
+                aria-checked={preset === p}
+                onClick={() => {
+                  writeNotifySoundPreset(p);
+                  playNewMessageChime(p);
+                }}
+                className={cn(
+                  "rounded-full border px-3 py-1 text-sm transition-colors",
+                  preset === p
+                    ? "border-primary bg-primary/15 text-foreground"
+                    : "border-border text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {t(`tones.${p}`)}
+              </button>
+            ))}
+          </div>
+        )}
         {support === "needs-install" ? (
           <p className="flex items-start gap-2 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-700 dark:text-amber-300">
             <CircleAlert className="mt-0.5 size-4 shrink-0" />

@@ -1,6 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
+  DEFAULT_SOUND_PRESET,
+  NOTIFY_SOUND_PRESET_KEY,
   NOTIFY_SOUND_STORAGE_KEY,
+  readNotifySoundPreset,
+  writeNotifySoundPreset,
   playNewMessageChime,
   readNotifySoundPref,
   writeNotifySoundPref,
@@ -29,6 +33,15 @@ describe("notify sound preference", () => {
     expect(readNotifySoundPref()).toBe(false);
     writeNotifySoundPref(true);
     expect(readNotifySoundPref()).toBe(true);
+  });
+
+  it("preset defaults and rejects unknown values", () => {
+    expect(readNotifySoundPreset()).toBe(DEFAULT_SOUND_PRESET);
+    writeNotifySoundPreset("bell");
+    expect(store.get(NOTIFY_SOUND_PRESET_KEY)).toBe("bell");
+    expect(readNotifySoundPreset()).toBe("bell");
+    store.set(NOTIFY_SOUND_PRESET_KEY, "airhorn");
+    expect(readNotifySoundPreset()).toBe(DEFAULT_SOUND_PRESET);
   });
 
   it("chime is a no-op without WebAudio", () => {

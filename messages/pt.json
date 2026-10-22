@@ -2038,7 +2038,15 @@
       "unconfigured": "O push ainda não está configurado no servidor.",
       "failed": "Não foi possível ativar as notificações push",
       "soundLabel": "Som para novas mensagens",
-      "soundDesc": "Toca quando um cliente escreve, enquanto o app está aberto neste dispositivo."
+      "soundDesc": "Toca quando um cliente escreve, enquanto o app está aberto neste dispositivo.",
+      "toneLabel": "Tom",
+      "tones": {
+        "chime": "Sininho",
+        "pop": "Pop",
+        "bell": "Sino",
+        "triple": "Triplo",
+        "knock": "Batida"
+      }
     }
   },
   "SignupPage": {

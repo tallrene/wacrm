@@ -6,14 +6,22 @@ import type { Message } from "@/types";
 import {
   playNewMessageChime,
   readNotifySoundPref,
+  readNotifySoundPreset,
   subscribeNotifySoundPref,
   unlockNotifySound,
+  type SoundPreset,
 } from "@/lib/notifications/sound";
 
 const serverSnapshot = () => true;
 
 export function useNotifySoundPref(): boolean {
   return useSyncExternalStore(subscribeNotifySoundPref, readNotifySoundPref, serverSnapshot);
+}
+
+const serverPreset = (): SoundPreset => "chime";
+
+export function useNotifySoundPreset(): SoundPreset {
+  return useSyncExternalStore(subscribeNotifySoundPref, readNotifySoundPreset, serverPreset);
 }
 
 /**
