@@ -183,6 +183,21 @@ export function MessageComposer({
   const [recording, setRecording] = useState(false);
   const [recordSeconds, setRecordSeconds] = useState(0);
   const recorderRef = useRef<import("opus-recorder").default | null>(null);
+
+  // Fully release a recorder: stop() only ends the mic stream and flushes
+  // the encoder; the AudioContext it created stays open until close().
+  // A leaked context makes Chrome flag the tab as "playing audio" forever
+  // and, after ~6 recordings, blocks new contexts (mic button fails).
+  const releaseRecorder = useCallback(() => {
+    const recorder = recorderRef.current;
+    recorderRef.current = null;
+    if (!recorder) return;
+    void recorder
+      .stop()
+      .catch(() => {})
+      .then(() => recorder.close())
+      .catch(() => {});
+  }, []);
   const cancelledRef = useRef(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -208,11 +223,10 @@ export function MessageComposer({
     return () => {
       clearTimer();
       cancelledRef.current = true;
-      // stop() releases the mic stream + audio context inside opus-recorder.
-      void recorderRef.current?.stop().catch(() => {});
+      releaseRecorder();
       removeStaged(draftRef.current?.path);
     };
-  }, [clearTimer, removeStaged]);
+  }, [clearTimer, removeStaged, releaseRecorder]);
 
   const adjustHeight = useCallback(() => {
     const el = textareaRef.current;
@@ -480,24 +494,23 @@ export function MessageComposer({
       setRecordSeconds(0);
       timerRef.current = setInterval(() => setRecordSeconds((s) => s + 1), 1000);
     } catch {
-      void recorderRef.current?.stop().catch(() => {});
-      recorderRef.current = null;
+      releaseRecorder();
       toast.error(t("microphoneDenied"));
     }
-  }, [inputsDisabled, busy, recording, finalizeRecording, t]);
+  }, [inputsDisabled, busy, recording, finalizeRecording, releaseRecorder, t]);
 
   const stopRecording = useCallback(() => {
     clearTimer();
     setRecording(false);
-    void recorderRef.current?.stop().catch(() => {});
-  }, [clearTimer]);
+    releaseRecorder();
+  }, [clearTimer, releaseRecorder]);
 
   const cancelRecording = useCallback(() => {
     cancelledRef.current = true;
     clearTimer();
     setRecording(false);
-    void recorderRef.current?.stop().catch(() => {});
-  }, [clearTimer]);
+    releaseRecorder();
+  }, [clearTimer, releaseRecorder]);
 
   // Auto-stop at the cap so a forgotten recording can't blow the
   // upload size limit.
