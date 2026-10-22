@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useRef, useState, type ReactNode } from "react";
 import { CornerUpLeft, Copy, SmilePlus } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -38,14 +38,23 @@ export function MessageActions({
 
   // Touch devices have no hover. Long-press fires `contextmenu`; we capture
   // it, suppress the native menu, and pin the toolbar open until the user
-  // interacts elsewhere.
+  // interacts elsewhere. Mouse/pen right-clicks are left alone so the
+  // browser's own menu (Copy, Search, Open link…) keeps working on desktop.
   const [touchOpen, setTouchOpen] = useState(false);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const lastPointerType = useRef<string>("mouse");
 
   const isAgent =
     message.sender_type === "agent" || message.sender_type === "bot";
 
   const handleContextMenu = (e: React.MouseEvent) => {
+    const fromTouch =
+      lastPointerType.current === "touch" ||
+      (typeof window !== "undefined" &&
+        window.matchMedia?.("(hover: none) and (pointer: coarse)").matches);
+    const hasSelection = !!window.getSelection?.()?.toString();
+    const onLink = !!(e.target as HTMLElement | null)?.closest?.("a[href]");
+    if (!fromTouch || hasSelection || onLink) return; // native menu
     e.preventDefault();
     setTouchOpen(true);
   };
@@ -85,6 +94,9 @@ export function MessageActions({
         "flex w-full",
         isAgent ? "justify-end" : "justify-start",
       )}
+      onPointerDown={(e) => {
+        lastPointerType.current = e.pointerType;
+      }}
       onContextMenu={handleContextMenu}
       onBlur={() => setTouchOpen(false)}
     >

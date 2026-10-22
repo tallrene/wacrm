@@ -24,6 +24,36 @@ import {
 } from "./message-media";
 import { InteractivePreview } from "@/components/interactive/interactive-preview";
 import { useTranslations } from "next-intl";
+import { splitLinks } from "@/lib/inbox/linkify";
+
+/**
+ * Message text with http(s)/www URLs rendered as real links. Opens in a new
+ * tab with rel=noopener so the customer's page can never reach the CRM.
+ */
+function LinkedText({ text }: { text: string | null | undefined }) {
+  const segments = splitLinks(text);
+  if (segments.length === 0) return null;
+  return (
+    <>
+      {segments.map((seg, i) =>
+        seg.type === "link" ? (
+          <a
+            key={i}
+            href={seg.href}
+            target="_blank"
+            rel="noopener noreferrer nofollow"
+            className="underline underline-offset-2 break-all hover:opacity-80"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {seg.value}
+          </a>
+        ) : (
+          <span key={i}>{seg.value}</span>
+        ),
+      )}
+    </>
+  );
+}
 
 interface MessageBubbleProps {
   message: Message;
@@ -119,7 +149,7 @@ function MessageContent({
     case "text":
       return (
         <p className="whitespace-pre-wrap break-words text-sm">
-          {message.content_text}
+          <LinkedText text={message.content_text} />
         </p>
       );
 
@@ -133,7 +163,7 @@ function MessageContent({
           )}
           {message.content_text && (
             <p className="mt-1 whitespace-pre-wrap break-words text-sm">
-              {message.content_text}
+              <LinkedText text={message.content_text} />
             </p>
           )}
         </div>
@@ -149,7 +179,7 @@ function MessageContent({
           )}
           {message.content_text && (
             <p className="mt-1 whitespace-pre-wrap break-words text-sm">
-              {message.content_text}
+              <LinkedText text={message.content_text} />
             </p>
           )}
         </div>
@@ -195,7 +225,7 @@ function MessageContent({
           </span>
           {message.content_text ? (
             <p className="mt-1 whitespace-pre-wrap break-words text-sm">
-              {message.content_text}
+              <LinkedText text={message.content_text} />
             </p>
           ) : (
             message.template_name && (
@@ -236,14 +266,22 @@ function MessageContent({
               {t("buttonReply")}
             </span>
             <p className="whitespace-pre-wrap break-words text-sm">
-              {message.content_text || t("interactiveReply")}
+              {message.content_text ? (
+                <LinkedText text={message.content_text} />
+              ) : (
+                t("interactiveReply")
+              )}
             </p>
           </div>
         );
       }
       return (
         <p className="whitespace-pre-wrap break-words text-sm">
-          {message.content_text || t("interactiveReply")}
+          {message.content_text ? (
+                <LinkedText text={message.content_text} />
+              ) : (
+                t("interactiveReply")
+              )}
         </p>
       );
     }
@@ -251,7 +289,11 @@ function MessageContent({
     default:
       return (
         <p className="whitespace-pre-wrap break-words text-sm">
-          {message.content_text || t("unsupported")}
+          {message.content_text ? (
+                <LinkedText text={message.content_text} />
+              ) : (
+                t("unsupported")
+              )}
         </p>
       );
   }
