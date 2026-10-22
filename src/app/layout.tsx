@@ -46,6 +46,12 @@ const metadata: Metadata = {
   },
   icons: {
     icon: [{ url: "/icon" }],
+    apple: [{ url: "/apple-icon", sizes: "180x180", type: "image/png" }],
+  },
+  appleWebApp: {
+    capable: true,
+    title: "House of 3D",
+    statusBarStyle: "black-translucent",
   },
   formatDetection: {
     email: false,

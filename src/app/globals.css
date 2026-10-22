@@ -207,7 +207,20 @@ html[data-theme="h3d"] {
   --sidebar-primary: oklch(0.62 0.2 266);
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-ring: oklch(0.62 0.2 266);
-  font-size: 15px;
+  /* Larger body copy without touching the rem-based layout grid:
+     text-sm 14 -> 15px, text-xs 12 -> 13px. */
+  --text-sm: 0.9375rem;
+  --text-sm--line-height: calc(1.375 / 0.9375);
+  --text-xs: 0.8125rem;
+  --text-xs--line-height: calc(1.125 / 0.8125);
+}
+
+/* Touch devices: iOS Safari zooms the page when a focused field is under
+   16px, which wrecks the inbox layout. Keep form fields at >=16px there. */
+@media (hover: none) and (pointer: coarse) {
+  html[data-theme="h3d"] :is(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]), textarea, select) {
+    font-size: max(1em, 16px);
+  }
 }
 
 /* Solid primary buttons keep the true brand blue. Unlayered rule, so it

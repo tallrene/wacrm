@@ -580,7 +580,10 @@ function InboxPageInner() {
             thread can occupy the full width. Always visible on lg+. */}
         <div
           className={cn(
-            "flex h-full flex-1 lg:flex-none",
+            // `min-w-0`: without it the list column's min-width:auto lets a
+            // long preview line size the column (1135px on a 390px phone),
+            // pushing timestamps and unread dots off-screen.
+            "flex h-full min-w-0 flex-1 lg:flex-none",
             hasActiveConv ? "hidden lg:flex" : "flex",
           )}
         >
