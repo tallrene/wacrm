@@ -2024,6 +2024,19 @@
       "textPlaceholder": "The message text to insert",
       "cancel": "Cancel",
       "save": "Save"
+    },
+    "pushNotifications": {
+      "title": "Push notifications on this device",
+      "description": "Get a notification for new customer messages even when the app is closed. Works on phones when the app is added to the Home Screen.",
+      "toggleLabel": "Notify this device",
+      "toggleDesc": "Push for new inbound messages in your team’s inbox.",
+      "needsInstall": "On iPhone, open the app from the Home Screen first (Share → Add to Home Screen), then turn this on.",
+      "unsupported": "This browser doesn’t support push notifications.",
+      "enabledToast": "Push notifications enabled on this device",
+      "deniedToast": "Notifications are blocked",
+      "deniedHint": "Allow notifications for this app in your device settings, then try again.",
+      "unconfigured": "Push isn’t configured on the server yet.",
+      "failed": "Couldn’t enable push notifications"
     }
   },
   "SignupPage": {

@@ -2024,6 +2024,19 @@
       "textPlaceholder": "삽입할 메시지 텍스트",
       "cancel": "취소",
       "save": "저장"
+    },
+    "pushNotifications": {
+      "title": "이 기기의 푸시 알림",
+      "description": "앱이 닫혀 있어도 새 고객 메시지 알림을 받습니다. 휴대폰에서는 앱을 홈 화면에 추가하면 작동합니다.",
+      "toggleLabel": "이 기기에 알림",
+      "toggleDesc": "팀 받은편지함의 새 수신 메시지에 대한 푸시입니다.",
+      "needsInstall": "iPhone에서는 먼저 홈 화면에서 앱을 여세요(공유 → 홈 화면에 추가). 그런 다음 켜세요.",
+      "unsupported": "이 브라우저는 푸시 알림을 지원하지 않습니다.",
+      "enabledToast": "이 기기에서 푸시 알림이 켜졌습니다",
+      "deniedToast": "알림이 차단되어 있습니다",
+      "deniedHint": "기기 설정에서 이 앱의 알림을 허용한 다음 다시 시도하세요.",
+      "unconfigured": "서버에 푸시가 아직 설정되지 않았습니다.",
+      "failed": "푸시 알림을 켤 수 없습니다"
     }
   },
   "SignupPage": {

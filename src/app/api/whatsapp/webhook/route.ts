@@ -16,6 +16,9 @@ import { reopenClosedConversation } from '@/lib/conversations/reopen'
 import { verifyMetaWebhookSignature } from '@/lib/whatsapp/webhook-signature'
 import { resumeAwaitingReply, runAutomationsForTrigger } from '@/lib/automations/engine'
 import { dispatchInboundToFlows } from '@/lib/flows/engine'
+import { sendInboundPush } from '@/lib/push/server'
+import { pickContactDisplayName } from '@/lib/notifications/browser-notify'
+import type { ContentType } from '@/types'
 import { dispatchInboundToAiReply } from '@/lib/ai/auto-reply'
 import { dispatchWebhookEvent } from '@/lib/webhooks/deliver'
 import {
@@ -826,6 +829,23 @@ async function processMessage(
     )
     return
   }
+
+  // Web Push to every member's subscribed devices (phones included).
+  // Sits right after the idempotency boundary so a Meta replay can never
+  // push twice. Fire-and-forget: a slow push service must not delay the
+  // rest of the fan-out.
+  void sendInboundPush({
+    accountId,
+    conversationId: conversation.id,
+    message: {
+      id: insertedRows[0].id,
+      conversation_id: conversation.id,
+      sender_type: 'customer',
+      content_type: contentType as ContentType,
+      content_text: contentText,
+    },
+    contactName: pickContactDisplayName(contactRecord),
+  }).catch((err) => console.warn('[push] inbound push failed', err))
 
   // Update conversation. The unread bump is done DB-side (migration 037's
   // bump_conversation_on_inbound) rather than as a read-modify-write of the

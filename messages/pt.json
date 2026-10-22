@@ -2024,6 +2024,19 @@
       "textPlaceholder": "O texto da mensagem a inserir",
       "cancel": "Cancelar",
       "save": "Salvar"
+    },
+    "pushNotifications": {
+      "title": "Notificações push neste dispositivo",
+      "description": "Receba uma notificação de novas mensagens de clientes mesmo com o app fechado. No celular funciona ao adicionar o app à tela inicial.",
+      "toggleLabel": "Notificar este dispositivo",
+      "toggleDesc": "Push para novas mensagens recebidas na caixa de entrada da equipe.",
+      "needsInstall": "No iPhone, abra o app pela tela inicial (Compartilhar → Adicionar à Tela de Início) e depois ative.",
+      "unsupported": "Este navegador não suporta notificações push.",
+      "enabledToast": "Notificações push ativadas neste dispositivo",
+      "deniedToast": "As notificações estão bloqueadas",
+      "deniedHint": "Permita notificações para este app nas configurações do dispositivo e tente novamente.",
+      "unconfigured": "O push ainda não está configurado no servidor.",
+      "failed": "Não foi possível ativar as notificações push"
     }
   },
   "SignupPage": {
