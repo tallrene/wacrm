@@ -1,12 +1,8 @@
 import { ImageResponse } from "next/og";
 
-// Replaces the default Next.js favicon with the brand mark — Hostinger
-// violet rounded square + white chat-square glyph — matching the
-// sidebar logo in `src/components/layout/sidebar.tsx`. Next.js renders
-// this at build time and auto-injects <link rel="icon"> into <head>.
-//
-// This route takes precedence over src/app/favicon.ico, which is the
-// Next.js default and can stay on disk harmlessly (or be removed).
+// House of 3D favicon: storefront electric-blue tile + white nozzle/house
+// glyph (same shape as `src/components/brand/brand-mark.tsx`). Next.js
+// renders this at build time and injects <link rel="icon">.
 
 export const runtime = "edge";
 export const size = { width: 32, height: 32 };
@@ -22,21 +18,25 @@ export default function Icon() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
-          background: "#7c3aed", // primary (Hostinger-aligned purple)
-          borderRadius: 6,
+          background: "#0000f2",
+          borderRadius: 7,
         }}
       >
         <svg
-          width="20"
-          height="20"
+          width="22"
+          height="22"
           viewBox="0 0 24 24"
           fill="none"
           stroke="#ffffff"
-          strokeWidth="2.5"
+          strokeWidth="2.2"
           strokeLinecap="round"
           strokeLinejoin="round"
         >
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+          <path d="M9 3h6v2.5L13.5 7h-3L9 5.5z" />
+          <path d="M12 7v1c-2.8 0-2.8 3.2 0 3.2" />
+          <path d="M5.5 16.5 12 11.2l6.5 5.3" />
+          <path d="M7.5 15v6h9v-6" />
+          <path d="M11 17.5h2v2h-2z" />
         </svg>
       </div>
     ),

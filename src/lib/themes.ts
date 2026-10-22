@@ -14,6 +14,7 @@
  */
 
 export const THEME_IDS = [
+  "h3d",
   "violet",
   "emerald",
   "cobalt",
@@ -23,7 +24,7 @@ export const THEME_IDS = [
 
 export type ThemeId = (typeof THEME_IDS)[number];
 
-export const DEFAULT_THEME: ThemeId = "violet";
+export const DEFAULT_THEME: ThemeId = "h3d";
 
 export const STORAGE_KEY = "wacrm.theme";
 
@@ -67,6 +68,12 @@ export interface ThemeMeta {
 }
 
 export const THEMES: ReadonlyArray<ThemeMeta> = [
+  {
+    id: "h3d",
+    name: "House of 3D",
+    tagline: "Brand default — storefront navy with electric blue.",
+    swatch: "oklch(0.5 0.3 264)",
+  },
   {
     id: "violet",
     name: "Violet",
