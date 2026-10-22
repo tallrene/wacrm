@@ -253,18 +253,29 @@ export function fileNameFromUrl(url: string | undefined | null): string | null {
     const path = new URL(url, "http://x").pathname;
     const last = path.split("/").filter(Boolean).pop() ?? "";
     const name = decodeURIComponent(last).trim();
-    return name && name.includes(".") ? name : name || null;
+    // Only a segment with an extension is a filename; "invoice-pdf" or an
+    // opaque id is just a route and must not be shown as the title.
+    return /\.[a-z0-9]{1,5}$/i.test(name) ? name : null;
   } catch {
     return null;
   }
 }
 
-function fileKind(name: string | null, mime: string | null | undefined): string {
+const KNOWN_KINDS = ["pdf", "docx", "doc", "xlsx", "xls", "csv", "stl", "3mf", "obj", "step", "stp", "zip", "png", "jpg"];
+
+function fileKind(
+  name: string | null,
+  mime: string | null | undefined,
+  url: string | null | undefined,
+): string {
   const ext = name?.includes(".") ? name.split(".").pop() : undefined;
   if (ext && ext.length <= 5) return ext.toUpperCase();
   if (mime?.includes("pdf")) return "PDF";
   if (mime?.includes("/")) return mime.split("/").pop()!.toUpperCase().slice(0, 5);
-  return "FILE";
+  // No filename or MIME (outbound via API): sniff the route, e.g. "/invoice-pdf".
+  const path = (url ?? "").split("?")[0].toLowerCase();
+  const hit = KNOWN_KINDS.find((k) => new RegExp(`[-_/.]${k}(?:[-_/]|$)`).test(path));
+  return hit ? hit.toUpperCase() : "FILE";
 }
 
 function kindTint(kind: string): string {
@@ -289,11 +300,13 @@ export function MediaDocumentBubble({
 }) {
   const { downloading, download } = useMediaDownload(message, t);
   const name = fileNameFromUrl(message.media_url);
-  const kind = fileKind(name, message.media_type);
-  const caption =
-    message.content_text && message.content_text.trim() !== name
-      ? message.content_text
-      : null;
+  const kind = fileKind(name, message.media_type, message.media_url);
+  const captionText = message.content_text?.trim() || null;
+  // Title: real filename if we have one, else the caption doubles as the
+  // title (WhatsApp shows the filename there; our API sends only carry a
+  // caption). The caption is repeated below only when it is distinct.
+  const title = name ?? captionText ?? t("document");
+  const caption = captionText && captionText !== title ? captionText : null;
 
   return (
     <div className="flex w-full min-w-0 flex-col gap-2">
@@ -313,8 +326,8 @@ export function MediaDocumentBubble({
             <FileText className="h-5 w-5" />
           </span>
           <span className="min-w-0 flex-1">
-            <span className="block truncate text-sm font-medium leading-tight">
-              {name || t("document")}
+            <span className="line-clamp-2 break-words text-sm font-medium leading-tight">
+              {title}
             </span>
             <span className="mt-0.5 block text-xs opacity-75">{kind}</span>
           </span>
