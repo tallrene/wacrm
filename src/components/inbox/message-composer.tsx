@@ -29,6 +29,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
@@ -632,7 +633,57 @@ export function MessageComposer({
           </Button>
         </div>
       ) : (
-        <div className="flex items-end gap-2">
+        <div className="flex items-end gap-1.5 sm:gap-2">
+          {/* Phone layout (< sm): one "+" menu holds everything the four
+              desktop buttons do, so the text field gets the width —
+              the same shape as WhatsApp's own composer. */}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              disabled={inputsDisabled || busy}
+              title={readOnly ? t("readOnlyTitle") : t("moreActions")}
+              className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full p-0 text-foreground/80 hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50 sm:hidden"
+            >
+              {busy ? (
+                <Loader2 className="h-5 w-5 animate-spin" />
+              ) : (
+                <Plus className="h-6 w-6" />
+              )}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="border-border bg-popover">
+              <DropdownMenuItem onClick={() => imageInputRef.current?.click()}>
+                <ImageIcon className="mr-2 h-4 w-4" />
+                {t("photo")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => videoInputRef.current?.click()}>
+                <Video className="mr-2 h-4 w-4" />
+                {t("video")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => documentInputRef.current?.click()}>
+                <FileText className="mr-2 h-4 w-4" />
+                {t("document")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => void startRecording()}>
+                <Mic className="mr-2 h-4 w-4" />
+                {t("voiceNote")}
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => openInteractiveBuilder()}>
+                <MessageSquareDashed className="mr-2 h-4 w-4" />
+                {t("interactiveMessage")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setQuickReplyOpen(true)}>
+                <Zap className="mr-2 h-4 w-4" />
+                {t("quickReplies")}
+              </DropdownMenuItem>
+              {!readOnly && (
+                <DropdownMenuItem onClick={onOpenTemplates}>
+                  <LayoutTemplate className="mr-2 h-4 w-4" />
+                  {t("sendTemplate")}
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
           {/* Attach menu — photo / video / document / voice. */}
           <DropdownMenu>
             <DropdownMenuTrigger
@@ -644,7 +695,7 @@ export function MessageComposer({
                     ? undefined
                     : t("attachMedia")
               }
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md p-0 text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-md p-0 text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50 sm:inline-flex"
             >
               {busy ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -684,7 +735,7 @@ export function MessageComposer({
                     ? undefined
                     : t("moreActions")
               }
-              className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md p-0 text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+              className="hidden h-9 w-9 shrink-0 items-center justify-center rounded-md p-0 text-muted-foreground hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50 sm:inline-flex"
             >
               <Plus className="h-4 w-4" />
             </DropdownMenuTrigger>
@@ -706,7 +757,7 @@ export function MessageComposer({
             canAct={!readOnly}
             gateReason={tGate("reasons.sendMessages")}
             title={readOnly ? undefined : t("sendTemplate")}
-            className="h-9 w-9 shrink-0 p-0 text-muted-foreground hover:text-foreground"
+            className="hidden h-9 w-9 shrink-0 p-0 text-muted-foreground hover:text-foreground sm:inline-flex"
             onClick={onOpenTemplates}
           >
             <LayoutTemplate className="h-4 w-4" />
@@ -748,18 +799,33 @@ export function MessageComposer({
             // The placeholder text also surfaces the read-only state.
             title={readOnly ? t("readOnlyTitle") : undefined}
             className={cn(
-              "flex-1 resize-none rounded-xl border border-border bg-muted px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-primary/50",
+              "min-h-10 flex-1 resize-none rounded-3xl border border-border bg-muted px-4 py-2.5 text-sm text-foreground placeholder-muted-foreground outline-none transition-colors focus:border-primary/50 sm:min-h-9 sm:rounded-xl",
               (sessionExpired || readOnly) && "cursor-not-allowed opacity-50"
             )}
           />
 
+          {/* Phone: mic while the field is empty (WhatsApp muscle memory),
+              send once there is text. Desktop keeps the always-there send. */}
+          {!text.trim() && !sessionExpired && !readOnly && (
+            <Button
+              size="sm"
+              onClick={() => void startRecording()}
+              title={t("voiceNote")}
+              className="h-10 w-10 shrink-0 rounded-full bg-primary p-0 hover:bg-primary/90 sm:hidden"
+            >
+              <Mic className="h-5 w-5" />
+            </Button>
+          )}
           <GatedButton
             size="sm"
             canAct={!readOnly}
             gateReason={tGate("reasons.sendMessages")}
             disabled={!text.trim() || sessionExpired || sending}
             onClick={handleSend}
-            className="h-9 w-9 shrink-0 bg-primary p-0 hover:bg-primary/90 disabled:opacity-40"
+            className={cn(
+              "h-10 w-10 shrink-0 rounded-full bg-primary p-0 hover:bg-primary/90 disabled:opacity-40 sm:h-9 sm:w-9 sm:rounded-lg",
+              !text.trim() && !sessionExpired && !readOnly && "hidden sm:inline-flex",
+            )}
           >
             <Send className="h-4 w-4" />
           </GatedButton>

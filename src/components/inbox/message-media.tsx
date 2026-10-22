@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import type { Message } from "@/types";
 import { downloadMediaMessage } from "@/lib/media/download";
 import { useMediaBlobUrl } from "@/hooks/use-media-blob-url";
+import { splitLinks } from "@/lib/inbox/linkify";
 
 /**
  * The media renderers behind `<MessageBubble>`'s image / video / audio /
@@ -245,6 +246,40 @@ export function MediaAudioBubble({
   );
 }
 
+/** Last path segment of a media URL, decoded, without the query string. */
+export function fileNameFromUrl(url: string | undefined | null): string | null {
+  if (!url) return null;
+  try {
+    const path = new URL(url, "http://x").pathname;
+    const last = path.split("/").filter(Boolean).pop() ?? "";
+    const name = decodeURIComponent(last).trim();
+    return name && name.includes(".") ? name : name || null;
+  } catch {
+    return null;
+  }
+}
+
+function fileKind(name: string | null, mime: string | null | undefined): string {
+  const ext = name?.includes(".") ? name.split(".").pop() : undefined;
+  if (ext && ext.length <= 5) return ext.toUpperCase();
+  if (mime?.includes("pdf")) return "PDF";
+  if (mime?.includes("/")) return mime.split("/").pop()!.toUpperCase().slice(0, 5);
+  return "FILE";
+}
+
+function kindTint(kind: string): string {
+  if (kind === "PDF") return "bg-red-500 text-white";
+  if (["DOC", "DOCX"].includes(kind)) return "bg-sky-600 text-white";
+  if (["XLS", "XLSX", "CSV"].includes(kind)) return "bg-emerald-600 text-white";
+  if (["STL", "3MF", "OBJ", "STEP", "STP"].includes(kind)) return "bg-violet-600 text-white";
+  return "bg-background/70 text-foreground";
+}
+
+/**
+ * WhatsApp-style file card: icon badge, file name, kind, download — and
+ * the caption (if any) underneath, with links clickable. The name comes
+ * from the media URL so a caption in `content_text` never hides it.
+ */
 export function MediaDocumentBubble({
   message,
   t,
@@ -253,24 +288,63 @@ export function MediaDocumentBubble({
   t: Translator;
 }) {
   const { downloading, download } = useMediaDownload(message, t);
+  const name = fileNameFromUrl(message.media_url);
+  const kind = fileKind(name, message.media_type);
+  const caption =
+    message.content_text && message.content_text.trim() !== name
+      ? message.content_text
+      : null;
 
   return (
-    <div className="flex items-center gap-2">
-      <a
-        href={message.media_url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex min-w-0 flex-1 items-center gap-2 rounded-lg bg-muted/50 px-3 py-2 text-sm hover:bg-muted"
-      >
-        <FileText className="h-5 w-5 shrink-0 text-muted-foreground" />
-        <span className="truncate">{message.content_text || t("document")}</span>
-      </a>
-      <MediaActionButton
-        icon={Download}
-        label={t("download")}
-        onClick={download}
-        busy={downloading}
-      />
+    <div className="flex w-full min-w-0 flex-col gap-2">
+      <div className="flex min-w-0 items-center gap-2 rounded-xl bg-black/15 p-2 pr-2.5">
+        <a
+          href={message.media_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex min-w-0 flex-1 items-center gap-3 rounded-lg hover:opacity-90"
+        >
+          <span
+            className={cn(
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
+              kindTint(kind),
+            )}
+          >
+            <FileText className="h-5 w-5" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-medium leading-tight">
+              {name || t("document")}
+            </span>
+            <span className="mt-0.5 block text-xs opacity-75">{kind}</span>
+          </span>
+        </a>
+        <MediaActionButton
+          icon={Download}
+          label={t("download")}
+          onClick={download}
+          busy={downloading}
+        />
+      </div>
+      {caption && (
+        <p className="whitespace-pre-wrap break-words text-sm">
+          {splitLinks(caption).map((seg, i) =>
+            seg.type === "link" ? (
+              <a
+                key={i}
+                href={seg.href}
+                target="_blank"
+                rel="noopener noreferrer nofollow"
+                className="underline underline-offset-2 break-all hover:opacity-80"
+              >
+                {seg.value}
+              </a>
+            ) : (
+              <span key={i}>{seg.value}</span>
+            ),
+          )}
+        </p>
+      )}
     </div>
   );
 }
