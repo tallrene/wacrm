@@ -586,9 +586,12 @@ async function resolveSignatureName(
 /** Append "— Name" to a plain-text body unless it already carries it. */
 export function signText(text: string, name: string | null): string {
   if (!name) return text;
+  // WhatsApp text bodies have no footer field and no size/colour control;
+  // italic (_…_) is the lightest sign-off the format allows.
   const sig = `${SIGNATURE_DASH} ${name}`;
-  if (text.trimEnd().endsWith(sig)) return text;
-  return `${text.trimEnd()}\n\n${sig}`;
+  const body = text.trimEnd();
+  if (body.endsWith(sig) || body.endsWith(`_${sig}_`)) return text;
+  return `${body}\n\n_${sig}_`;
 }
 
 /** Interactive footer: the sender's name when the caller gave none, or

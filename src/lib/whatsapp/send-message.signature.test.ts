@@ -2,8 +2,8 @@ import { describe, it, expect } from 'vitest';
 import { signText, signFooter } from './send-message';
 
 describe('sender signature', () => {
-  it('appends an em-dash signature to plain text', () => {
-    expect(signText('Hello', 'Mira (AI)')).toBe('Hello\n\n\u2014 Mira (AI)');
+  it('appends an italic em-dash signature to plain text', () => {
+    expect(signText('Hello', 'Mira (AI)')).toBe('Hello\n\n_\u2014 Mira (AI)_');
   });
   it('does not double-sign', () => {
     const once = signText('Hello', 'René G');
