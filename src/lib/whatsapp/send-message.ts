@@ -87,6 +87,11 @@ export interface SendMessageParams {
   /** Structured payload for `messageType === 'interactive'`. */
   interactivePayload?: InteractiveMessagePayload | null;
   replyToMessageId?: string | null;
+  /** auth.users id of the human/bot member who sent this (UI: the session
+   *  user; API key: the key owner). Stored in messages.sender_id so the inbox
+   *  can label quotes "(me)" / "Mira (AI)" instead of treating every outbound
+   *  as the current user. Null = unknown (legacy rows). */
+  senderId?: string | null;
 }
 
 export interface SendMessageResult {
@@ -200,6 +205,7 @@ export async function sendMessageToConversation(
     templateMessageParams,
     interactivePayload,
     replyToMessageId,
+    senderId,
   } = params;
 
   if (!conversationId) {
@@ -478,6 +484,7 @@ export async function sendMessageToConversation(
     .insert({
       conversation_id: conversationId,
       sender_type: 'agent',
+      sender_id: senderId || null,
       content_type: messageType,
       content_text: persistedText,
       media_url: mediaUrl || null,

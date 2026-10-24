@@ -169,7 +169,7 @@ export function MessageThread({
   const tTimer = useTranslations("Inbox.sessionTimer");
   const tQuote = useTranslations("Inbox.replyQuote");
 
-  const { user } = useAuth();
+  const { user, account } = useAuth();
   const { getPresence, getRow, now } = usePresence();
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -755,15 +755,31 @@ export function MessageThread({
   const contactDisplayName =
     contact?.name || (contact ? contactHandle(contact) : "") || t("customer");
 
-  // Author label for a quoted message: "You" when we sent the parent,
-  // contact name when the customer sent it.
+  // Author label for a quoted message. Customer messages carry the contact
+  // name. Outbound messages are attributed by `sender_id` (auth user id,
+  // written by the send core since the sender-attribution change): the
+  // current user sees "You" only for messages they sent themselves; another
+  // member's message (e.g. the "Mira (AI)" team member sending through the
+  // API) shows that member's name; rows with no sender (legacy / automations)
+  // fall back to the account name — what WhatsApp itself shows the customer.
+  const outboundAuthorLabel = useCallback(
+    (m: Message): string => {
+      if (m.sender_id && m.sender_id === user?.id) return t("you");
+      const member = m.sender_id
+        ? profiles.find((p) => p.user_id === m.sender_id)
+        : undefined;
+      if (member?.full_name) return member.full_name;
+      return account?.name || t("you");
+    },
+    [account?.name, profiles, t, user?.id],
+  );
   const authorLabelFor = useCallback(
     (m: Message): string => {
       const isAgentMsg =
         m.sender_type === "agent" || m.sender_type === "bot";
-      return isAgentMsg ? t("you") : contactDisplayName;
+      return isAgentMsg ? outboundAuthorLabel(m) : contactDisplayName;
     },
-    [contactDisplayName, t],
+    [contactDisplayName, outboundAuthorLabel],
   );
 
   const handleStartReply = useCallback(
@@ -1116,7 +1132,7 @@ export function MessageThread({
                       ? {
                           authorLabel:
                             parent.sender_type === "agent" || parent.sender_type === "bot"
-                              ? t("me") 
+                              ? outboundAuthorLabel(parent)
                               : contact?.name || contact?.phone || t("unknown"),
                           preview: buildReplyPreview(parent, tQuote),
                         }
