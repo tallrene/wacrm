@@ -786,15 +786,16 @@ export function MessageThread({
     },
     [account?.name, profiles, t, user?.id],
   );
-  // Footer name on outbound bubbles: only for other members' messages
-  // (own messages carry no name, as in WhatsApp; legacy rows have none).
+  // Footer name on outbound bubbles for every attributed message — own
+  // ones included, so a shared inbox reads unambiguously (legacy rows
+  // without a sender stay unlabelled).
   const senderLabelFor = useCallback(
     (m: Message): string | null => {
       if (m.sender_type !== "agent" && m.sender_type !== "bot") return null;
-      if (!m.sender_id || m.sender_id === user?.id) return null;
+      if (!m.sender_id) return null;
       return profiles.find((p) => p.user_id === m.sender_id)?.full_name || null;
     },
-    [profiles, user?.id],
+    [profiles],
   );
   const authorLabelFor = useCallback(
     (m: Message): string => {

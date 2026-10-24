@@ -62,7 +62,7 @@ interface MessageBubbleProps {
   /** Briefly true after a quote tap landed on this message. */
   highlighted?: boolean;
   /** Outbound only: name of the member who sent it, shown as a small
-   *  footer (WhatsApp-style) when it was not the current user. */
+   *  footer (WhatsApp-style). */
   senderLabel?: string | null;
   reactions?: MessageReaction[];
   currentUserId?: string;
