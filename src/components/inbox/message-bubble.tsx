@@ -61,6 +61,9 @@ interface MessageBubbleProps {
   reply?: { authorLabel: string; preview: string; onJump?: () => void } | null;
   /** Briefly true after a quote tap landed on this message. */
   highlighted?: boolean;
+  /** Outbound only: name of the member who sent it, shown as a small
+   *  footer (WhatsApp-style) when it was not the current user. */
+  senderLabel?: string | null;
   reactions?: MessageReaction[];
   currentUserId?: string;
   onToggleReaction?: (emoji: string) => void;
@@ -305,6 +308,7 @@ export function MessageBubble({
   message,
   reply,
   highlighted = false,
+  senderLabel,
   reactions,
   currentUserId,
   onToggleReaction,
@@ -355,6 +359,11 @@ export function MessageBubble({
             isAgent ? "justify-end" : "justify-start",
           )}
         >
+          {isAgent && senderLabel && (
+            <span className="mr-auto truncate text-[11px] text-primary-foreground/70">
+              {senderLabel}
+            </span>
+          )}
           {/* AI badge — only on replies the auto-reply bot generated
               (always outbound, so it sits on the primary fill). Lets
               agents tell an AI reply from their own / a Flow's at a
