@@ -1,17 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { signText, signFooter } from './send-message';
+import { signFooter } from './send-message';
 
 describe('sender signature', () => {
-  it('appends an italic em-dash signature to plain text', () => {
-    expect(signText('Hello', 'Mira (AI)')).toBe('Hello\n\n_\u2014 Mira (AI)_');
-  });
-  it('does not double-sign', () => {
-    const once = signText('Hello', 'René G');
-    expect(signText(once, 'René G')).toBe(once);
-  });
-  it('leaves text alone without a sender', () => {
-    expect(signText('Hello', null)).toBe('Hello');
-  });
   it('uses the name as footer when none was given', () => {
     expect(signFooter(undefined, 'Mira (AI)', 'House of 3D')).toBe('Mira (AI)');
   });

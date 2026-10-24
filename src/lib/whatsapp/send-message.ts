@@ -208,13 +208,13 @@ export async function sendMessageToConversation(
     senderId,
   } = params;
 
-  // Sender signature — WhatsApp shows every outbound under the business
-  // name, so the only way a customer can tell the AI member from a human
-  // is inside the message itself. When the sender is a known member we
-  // append "— <name>" to plain text and use the name as the interactive
-  // footer (when none was given, or when the caller used the account
-  // name as a generic footer). Stored content stays unsigned — the inbox
-  // attributes by sender_id. Opt out with WA_SENDER_SIGNATURE=off.
+  // Sender attribution on WhatsApp — every outbound shows under the
+  // business name, so the only place a member's name can appear is the
+  // grey footer of interactive (button/list) messages. When the sender is
+  // a known member it becomes the footer (when none was given, or when
+  // the caller used the account name as a generic footer). Plain text is
+  // sent untouched (an inline "— Name" sign-off was tried and rejected).
+  // Opt out with WA_SENDER_SIGNATURE=off.
   const { signatureName, accountName: accountNameForFooter } =
     await resolveSignatureName(db, accountId, senderId);
 
@@ -415,7 +415,7 @@ export async function sendMessageToConversation(
       phoneNumberId: config.phone_number_id,
       accessToken,
       to: phone,
-      text: signText(contentText!, signatureName),
+      text: contentText!,
       contextMessageId,
     });
     return result.messageId;
@@ -581,17 +581,6 @@ async function resolveSignatureName(
     signatureName: name ? name.slice(0, 50) : null,
     accountName: (account?.name || '').trim() || null,
   };
-}
-
-/** Append "— Name" to a plain-text body unless it already carries it. */
-export function signText(text: string, name: string | null): string {
-  if (!name) return text;
-  // WhatsApp text bodies have no footer field and no size/colour control;
-  // italic (_…_) is the lightest sign-off the format allows.
-  const sig = `${SIGNATURE_DASH} ${name}`;
-  const body = text.trimEnd();
-  if (body.endsWith(sig) || body.endsWith(`_${sig}_`)) return text;
-  return `${body}\n\n_${sig}_`;
 }
 
 /** Interactive footer: the sender's name when the caller gave none, or
