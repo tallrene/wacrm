@@ -173,6 +173,19 @@ export function MessageThread({
   const { getPresence, getRow, now } = usePresence();
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  // Quote tap → scroll the quoted message into view and flash it, the way
+  // WhatsApp does. Only loaded messages can be quoted (the quote itself
+  // needs the parent row), so a plain DOM lookup is enough.
+  const [highlightedId, setHighlightedId] = useState<string | null>(null);
+  const highlightTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const jumpToMessage = useCallback((id: string) => {
+    const el = document.getElementById(`msg-${id}`);
+    if (!el) return;
+    el.scrollIntoView({ block: "center", behavior: "smooth" });
+    setHighlightedId(id);
+    if (highlightTimer.current) clearTimeout(highlightTimer.current);
+    highlightTimer.current = setTimeout(() => setHighlightedId(null), 1600);
+  }, []);
   const [templateModalOpen, setTemplateModalOpen] = useState(false);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [reactions, setReactions] = useState<MessageReaction[]>([]);
@@ -1135,6 +1148,7 @@ export function MessageThread({
                               ? outboundAuthorLabel(parent)
                               : contact?.name || contact?.phone || t("unknown"),
                           preview: buildReplyPreview(parent, tQuote),
+                          onJump: () => jumpToMessage(parent.id),
                         }
                       : null;
                     const msgReactions = reactionsByMessageId.get(msg.id);
@@ -1161,6 +1175,7 @@ export function MessageThread({
                         <MessageBubble
                           message={msg}
                           reply={reply}
+                          highlighted={highlightedId === msg.id}
                           reactions={msgReactions}
                           currentUserId={user?.id}
                           onToggleReaction={handlePillToggle}

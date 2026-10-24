@@ -208,6 +208,16 @@ export async function sendMessageToConversation(
     senderId,
   } = params;
 
+  // Sender signature — WhatsApp shows every outbound under the business
+  // name, so the only way a customer can tell the AI member from a human
+  // is inside the message itself. When the sender is a known member we
+  // append "— <name>" to plain text and use the name as the interactive
+  // footer (when none was given, or when the caller used the account
+  // name as a generic footer). Stored content stays unsigned — the inbox
+  // attributes by sender_id. Opt out with WA_SENDER_SIGNATURE=off.
+  const { signatureName, accountName: accountNameForFooter } =
+    await resolveSignatureName(db, accountId, senderId);
+
   if (!conversationId) {
     throw new SendMessageError(
       'bad_request',
@@ -382,7 +392,7 @@ export async function sendMessageToConversation(
           to: phone,
           bodyText: p.body,
           headerText: p.header || undefined,
-          footerText: p.footer || undefined,
+          footerText: signFooter(p.footer, signatureName, accountNameForFooter),
           buttons: p.buttons,
           contextMessageId,
         });
@@ -395,7 +405,7 @@ export async function sendMessageToConversation(
         bodyText: p.body,
         buttonLabel: p.button_label,
         headerText: p.header || undefined,
-        footerText: p.footer || undefined,
+        footerText: signFooter(p.footer, signatureName, accountNameForFooter),
         sections: p.sections,
         contextMessageId,
       });
@@ -405,7 +415,7 @@ export async function sendMessageToConversation(
       phoneNumberId: config.phone_number_id,
       accessToken,
       to: phone,
-      text: contentText!,
+      text: signText(contentText!, signatureName),
       contextMessageId,
     });
     return result.messageId;
@@ -545,4 +555,52 @@ export async function sendMessageToConversation(
   }
 
   return { messageId: messageRecord.id, whatsappMessageId: waMessageId };
+}
+
+// ---------------------------------------------------------------------------
+// Sender signature helpers
+// ---------------------------------------------------------------------------
+
+const SIGNATURE_DASH = '\u2014'; // em dash
+
+/** Member display name for the signature, or null when disabled/unknown. */
+async function resolveSignatureName(
+  db: SupabaseClient,
+  accountId: string,
+  senderId: string | null | undefined
+): Promise<{ signatureName: string | null; accountName: string | null }> {
+  if (process.env.WA_SENDER_SIGNATURE === 'off' || !senderId) {
+    return { signatureName: null, accountName: null };
+  }
+  const [{ data: profile }, { data: account }] = await Promise.all([
+    db.from('profiles').select('full_name').eq('user_id', senderId).maybeSingle(),
+    db.from('accounts').select('name').eq('id', accountId).maybeSingle(),
+  ]);
+  const name = (profile?.full_name || '').trim();
+  return {
+    signatureName: name ? name.slice(0, 50) : null,
+    accountName: (account?.name || '').trim() || null,
+  };
+}
+
+/** Append "— Name" to a plain-text body unless it already carries it. */
+export function signText(text: string, name: string | null): string {
+  if (!name) return text;
+  const sig = `${SIGNATURE_DASH} ${name}`;
+  if (text.trimEnd().endsWith(sig)) return text;
+  return `${text.trimEnd()}\n\n${sig}`;
+}
+
+/** Interactive footer: the sender's name when the caller gave none, or
+ *  only the generic account name. An explicit custom footer is kept. */
+export function signFooter(
+  footer: string | undefined,
+  name: string | null,
+  accountName: string | null
+): string | undefined {
+  const given = (footer || '').trim();
+  if (!name) return given || undefined;
+  if (!given) return name;
+  if (accountName && given.toLowerCase() === accountName.toLowerCase()) return name;
+  return given;
 }

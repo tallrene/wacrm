@@ -58,7 +58,9 @@ function LinkedText({ text }: { text: string | null | undefined }) {
 interface MessageBubbleProps {
   message: Message;
   /** Pre-computed quote info for messages that reply to another. */
-  reply?: { authorLabel: string; preview: string } | null;
+  reply?: { authorLabel: string; preview: string; onJump?: () => void } | null;
+  /** Briefly true after a quote tap landed on this message. */
+  highlighted?: boolean;
   reactions?: MessageReaction[];
   currentUserId?: string;
   onToggleReaction?: (emoji: string) => void;
@@ -302,6 +304,7 @@ function MessageContent({
 export function MessageBubble({
   message,
   reply,
+  highlighted = false,
   reactions,
   currentUserId,
   onToggleReaction,
@@ -317,14 +320,16 @@ export function MessageBubble({
   // group matches the bubble's content area, not the full row.
   return (
     <div
+      id={`msg-${message.id}`}
       className={cn(
-        "flex flex-col",
+        "flex flex-col scroll-mt-20",
         isAgent ? "items-end" : "items-start",
       )}
     >
       <div
         className={cn(
-          "relative rounded-2xl px-3 py-2",
+          "relative rounded-2xl px-3 py-2 transition-shadow duration-700",
+          highlighted && "ring-2 ring-primary/70 ring-offset-2 ring-offset-background",
           isAgent
             ? "rounded-br-md bg-primary text-primary-foreground"
             : "rounded-bl-md bg-muted text-foreground",
@@ -334,6 +339,7 @@ export function MessageBubble({
           <ReplyQuote
             authorLabel={reply.authorLabel}
             preview={reply.preview}
+            onJump={reply.onJump}
             onPrimary={isAgent}
           />
         )}

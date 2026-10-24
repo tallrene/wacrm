@@ -19,6 +19,8 @@ interface ReplyQuoteProps {
    *  quote must read against the primary surface rather than the neutral
    *  foreground — otherwise it goes low-contrast in light mode. */
   onPrimary?: boolean;
+  /** Bubble variant only: jump to the quoted message (WhatsApp behaviour). */
+  onJump?: () => void;
 }
 
 export function ReplyQuote({
@@ -26,13 +28,29 @@ export function ReplyQuote({
   preview,
   onDismiss,
   onPrimary = false,
+  onJump,
 }: ReplyQuoteProps) {
   const t = useTranslations("Inbox.replyQuote");
   const isChip = !!onDismiss;
+  const jumpable = !isChip && !!onJump;
   return (
     <div
+      role={jumpable ? "button" : undefined}
+      tabIndex={jumpable ? 0 : undefined}
+      onClick={jumpable ? onJump : undefined}
+      onKeyDown={
+        jumpable
+          ? (e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                onJump?.();
+              }
+            }
+          : undefined
+      }
       className={cn(
         "flex items-start gap-2 border-l-2 px-2 py-1",
+        jumpable && "cursor-pointer select-none hover:brightness-110 active:brightness-95",
         onPrimary ? "border-primary-foreground/50" : "border-primary",
         isChip
           ? "rounded-md bg-muted/80"
